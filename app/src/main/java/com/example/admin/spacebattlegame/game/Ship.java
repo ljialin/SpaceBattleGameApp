@@ -1,8 +1,11 @@
 package com.example.admin.spacebattlegame.game;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.opengl.GLES20;
 
 import com.example.admin.spacebattlegame.game.physics.ForcePhysics;
 import com.example.admin.spacebattlegame.game.physics.GravityPhysics;
@@ -179,7 +182,20 @@ public class Ship extends GameObject {
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawCircle((float) this.pos.x, (float) this.pos.y, (float) this.radius, paint);
+//        canvas.drawCircle((float) this.pos.x, (float) this.pos.y, (float) this.radius, paint);
+        final RectF rect = new RectF();
+        //Example values
+        float left = (float) this.pos.x - SHIP_RADIUS*2/3;
+        float top = (float) this.pos.y + SHIP_RADIUS;
+        float right = (float) this.pos.x + SHIP_RADIUS*2/3;
+        float bottom = (float) this.pos.y - SHIP_RADIUS;
+        rect.set(left, top, right, bottom);
+        paint.setStrokeWidth(20);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        float degree = 75;// (float) Math.atan2(dir.x, dir.y);
+        canvas.drawArc(rect, degree, 360, false, paint);
+        canvas.drawCircle((float) (this.pos.x+SHIP_RADIUS*2/3*Math.sin(degree)), (float) (this.pos.y+SHIP_RADIUS*Math.cos(degree)), SHIP_RADIUS/4, paint);
         System.out.println("ship drawn");
     }
 

@@ -76,8 +76,11 @@ public class GameThread extends Thread {
         tp.setTextSize(rect.height() / 20);
         float inset = -tp.ascent() * 2;
         tp.setTextAlign(Paint.Align.LEFT);
+        tp.setTextSize(10);
+
         c.drawText("Score = " + model.score, inset, inset, tp);
         tp.setTextAlign(Paint.Align.RIGHT);
+        tp.setTextSize(10);
         String timeRemaining = String.format("%.2fs", model.timeRemaining / 1000.0f);
         c.drawText(timeRemaining, rect.width() - inset, inset, tp);
         tp.setTextAlign(Paint.Align.CENTER);
