@@ -2,6 +2,7 @@ package com.example.admin.spacebattlegame.game;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 
 import com.example.admin.spacebattlegame.tools.Vector2d;
 
@@ -17,17 +18,19 @@ public abstract class GameObject {
     protected boolean dead;
     protected int playerId;
     public int color;
+    Paint paint;
 
-    public GameObject() {
-        this.pos = new Vector2d(640 / 2, 480 / 2);
+    public GameObject(Paint paint) {
+        this.pos = new Vector2d(0, 0);
         this.radius = 0;
         this.playerId = -1;
         this.dead = false;
+        this.paint = paint;
         this.color = Color.WHITE;
     }
 
-    public GameObject(Vector2d pos) {
-        this();
+    public GameObject(Paint paint, Vector2d pos) {
+        this(paint);
         this.pos.x = pos.x;
         this.pos.y = pos.y;
     }
@@ -36,7 +39,7 @@ public abstract class GameObject {
 
     public abstract void update();
 
-    public abstract void draw(Canvas c);
+    public abstract void draw(Canvas canvas);
 
     public Vector2d getPosition() {
         return pos;

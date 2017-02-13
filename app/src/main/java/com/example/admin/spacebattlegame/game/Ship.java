@@ -1,13 +1,17 @@
 package com.example.admin.spacebattlegame.game;
 
 import android.graphics.Canvas;
-import android.provider.SyncStateContract;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
+import com.example.admin.spacebattlegame.game.physics.ForcePhysics;
+import com.example.admin.spacebattlegame.game.physics.GravityPhysics;
+import com.example.admin.spacebattlegame.game.physics.RotationPhysics;
+import com.example.admin.spacebattlegame.tools.Utils;
 import com.example.admin.spacebattlegame.tools.Vector2d;
 
-import java.util.ArrayList;
-import java.util.TreeMap;
 
+import static com.example.admin.spacebattlegame.game.Constants.*;
 import static com.example.admin.spacebattlegame.game.SpaceBattleGameModel.PLAYER_COLOR;
 
 /**
@@ -17,42 +21,51 @@ import static com.example.admin.spacebattlegame.game.SpaceBattleGameModel.PLAYER
  */
 
 public class Ship extends GameObject {
-    public Vector2d dir;
-    public Vector2d velocity;
-    public int playerId;
-    private int nbMissiles;
+    static final String TAG = "Ship: ";
+    private int playerId;
+    private Vector2d dir;
+    private Vector2d velocity;
     private boolean thrusting;
+    private int nbMissiles;
     private int healthPoints;
     private int nbKills;
     private double cost;
     private int winState;
 
-    /** define the shape of the ship */
-    static final int SHIP_RADIUS = 20;
-    static int[] xp = {-SHIP_RADIUS, 0, SHIP_RADIUS, 0};
-    static int[] yp = {SHIP_RADIUS, -SHIP_RADIUS, SHIP_RADIUS, 0};
-    /** the thrust poly that will be drawn when the ship is thrusting */
-    static int[] xpThrust =  {-SHIP_RADIUS, 0, SHIP_RADIUS, 0};
-    static int[] ypThrust = {SHIP_RADIUS, SHIP_RADIUS+1, SHIP_RADIUS, 0};
+    Paint paint;
 
-    static final int MAX_HEALTH_POINTS = 10;
-    static final int MAX_NB_MISSILES = 100;
+    /** define the shape of the ship */
     /**
      * Constructor
      */
-    public Ship(Vector2d pos, Vector2d dir, int playerId) {
-        super(pos);
-        this.dir = dir;
-        this.velocity = new Vector2d();
+    public Ship(Paint paint, Vector2d pos, Vector2d dir, int playerId) {
+        super(paint,pos);
+        this.paint = paint;
         this.playerId = playerId;
+        this.dir = dir;
         setParam();
+        System.out.println("Ship " + playerId + " created");
     }
 
-    public Ship(Vector2d pos, Vector2d dir, Vector2d velocity, int playerId) {
-        this(pos, dir, playerId);
+    public Ship(Paint paint, Vector2d pos, Vector2d dir, Vector2d velocity, int playerId) {
+        this(paint, pos, dir, playerId);
         this.velocity = velocity;
     }
 
+    public void setParam() {
+        this.color = PLAYER_COLOR[playerId];
+        this.velocity = new Vector2d();
+        this.thrusting = false;
+        this.nbMissiles = MISSILE_MAX_RESOURCE;
+        this.healthPoints = MAX_HEALTH_POINTS;
+        this.nbKills = 0;
+        this.cost = 0;
+        this.winState = 0;
+        this.radius = SHIP_RADIUS;
+        this.thrusting = false;
+        this.cost = 0.0;
+        this.nbKills = 0;
+    }
 
     public void reset(int x, int y) {
         this.pos.set(x, y);
@@ -61,37 +74,23 @@ public class Ship extends GameObject {
         setParam();
     }
 
-    public void setParam() {
-        this.radius = SHIP_RADIUS;
-        this.thrusting = false;
-        this.healthPoints = MAX_HEALTH_POINTS;
-        this.winState = WINNER.NO_WINNER;
-        this.color = PLAYER_COLOR[playerId];
-        this.cost = 0.0;
-        this.nbKills = 0;
-        this.resources = new TreeMap<>();
-//    this.resources.put(Constants.WEAPON_ID_MISSILE,Constants.MISSILE_MAX_RESOURCE);
-        this.weaponSystems = new ArrayList<>();
-        this.weaponSystems.add(new WeaponSystem(MAX_NB_MISSILES));
-    }
-
-    public void update(Types.ACTIONS action) {
+    public void update(String action) {
         this.thrusting = false;
         switch (action) {
-            case ACTION_THRUST:
+            case "ACTION_THRUST":
                 this.thrusting = true;
                 ForcePhysics.thrust(velocity, dir);
                 break;
-            case ACTION_LEFT:
+            case "ACTION_LEFT":
                 RotationPhysics.steer(dir, -1.0);
                 break;
-            case ACTION_RIGHT:
+            case "ACTION_RIGHT":
                 RotationPhysics.steer(dir, 1.0);
                 break;
-            case ACTION_FIRE:
+            case "ACTION_FIRE":
                 ForcePhysics.repulse(pos, dir, false);
                 break;
-            case ACTION_NIL:
+            case "ACTION_NIL":
                 break;
             default:
                 break;
@@ -105,10 +104,6 @@ public class Ship extends GameObject {
                 Constants.SHIP_MAX_SPEED);
 
         pos.add(velocity);
-
-        for (WeaponSystem ws : weaponSystems) {
-            ws.update();
-        }
     }
 
     public double dotTo(Ship other)
@@ -135,65 +130,22 @@ public class Ship extends GameObject {
         return diff.mag();
     }
 
-    public Rectangle2D getBound() {
-        return new Rectangle2D.Double(pos.x, pos.y,
-                Double.valueOf(xp[2]-xp[0]), Double.valueOf(yp[0]-yp[1]));
-    }
-
     public Vector2d getDirection() {
         return dir;
     }
 
-    public Types.WINNER getWinState() {
-        return winState;
-    }
-
-    public void setWinState(Types.WINNER winner) {
-        this.winState = winner;
-    }
-
     public double getScore() {
-        double score = getPoints();
-//        + this.healthPoints * Constants.LIVE_AWARD;
+        double score = this.nbKills * KILL_AWARD - this.cost;
         return score;
     }
 
-    public void setPlayer(AbstractMultiPlayer _AbstractMulti_player) {
-        this.player = _AbstractMulti_player;
-    }
 
-    public WeaponSystem getWeapon(int weaponId) {
-        for(WeaponSystem ws : weaponSystems) {
-            if (ws.getWeaponId() == weaponId) {
-                return ws;
-            }
-        }
-        return null;
-    }
+    public boolean fire() {
 
-    public boolean fireWeapon(int weaponId) {
-        WeaponSystem ws = getWeapon(weaponId);
-        if (StateObservationMulti.cheating == playerId) {
-            this.cost -= ws.getCost();
-            return true;
-        }
-        if (ws != null) {
-            boolean canFire = ws.fire();
-            if (canFire) {
-                this.cost -= ws.getCost();
-            }
+        if (this.nbMissiles >0) {
+            boolean canFire = true;
+            this.cost += 1;
             return canFire;
-        }
-        return false;
-    }
-
-    public boolean canFireWeapon(int weaponId) {
-        if (StateObservationMulti.cheating == playerId) {
-            return true;
-        }
-        WeaponSystem ws = getWeapon(weaponId);
-        if (ws != null) {
-            return ws.canFire();
         }
         return false;
     }
@@ -205,18 +157,18 @@ public class Ship extends GameObject {
     @Override
     public void injured(int harm) {
         this.healthPoints = this.healthPoints - harm;
-        this.healthPoints = tools.Utils.clamp(0, this.healthPoints, Constants.MAX_HEALTH_POINTS);
+        this.healthPoints = Utils.clamp(0, this.healthPoints, Constants.MAX_HEALTH_POINTS);
     }
 
     @Override
     public Ship copy() {
-        Ship cloneShip = new Ship(pos.copy(), dir.copy(), velocity.copy(), playerId);
+        Ship cloneShip = new Ship(this.paint, pos.copy(), dir.copy(), velocity.copy(), playerId);
+        cloneShip.thrusting = this.thrusting;
+        cloneShip.nbMissiles = this.nbMissiles;
         cloneShip.healthPoints = this.healthPoints;
         cloneShip.nbKills = this.nbKills;
         cloneShip.cost = this.cost;
         cloneShip.winState = this.winState;
-        cloneShip.resources.clear();
-
         return cloneShip;
     }
 
@@ -226,17 +178,9 @@ public class Ship extends GameObject {
     }
 
     @Override
-    public void draw(Canvas c) {
-
-    }
-
-
-    public void updatePoints() {
-        getPoints();
-    }
-
-    public double getPoints() {
-        return this.nbKills * Constants.KILL_AWARD + this.cost;
+    public void draw(Canvas canvas) {
+        canvas.drawCircle((float) this.pos.x, (float) this.pos.y, (float) this.radius, paint);
+        System.out.println("ship drawn");
     }
 
     public double getCost() {
@@ -250,5 +194,10 @@ public class Ship extends GameObject {
     @Override
     public boolean isDead() {
         return (this.healthPoints<=0);
+    }
+
+    public void update(Rect rect) {
+        pos.add(velocity);
+        pos.wrap(rect.width(), rect.height());
     }
 }
