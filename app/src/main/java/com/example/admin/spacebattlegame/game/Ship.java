@@ -3,6 +3,7 @@ package com.example.admin.spacebattlegame.game;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.opengl.GLES20;
@@ -37,6 +38,11 @@ public class Ship extends GameObject {
 
     Paint paint;
 
+    static final Vector2d[] shipPoints = new Vector2d[] {new Vector2d(0,0),
+            new Vector2d(-SHIP_RADIUS/Math.sqrt(2),SHIP_RADIUS/Math.sqrt(2)),
+            new Vector2d(SHIP_RADIUS,0),
+            new Vector2d(-SHIP_RADIUS/Math.sqrt(2),-SHIP_RADIUS/Math.sqrt(2))};
+
     /** define the shape of the ship */
     /**
      * Constructor
@@ -68,6 +74,7 @@ public class Ship extends GameObject {
         this.thrusting = false;
         this.cost = 0.0;
         this.nbKills = 0;
+        isWrappable = true;
     }
 
     public void reset(int x, int y) {
@@ -77,23 +84,23 @@ public class Ship extends GameObject {
         setParam();
     }
 
-    public void update(String action) {
+    public void update(Types.ACTIONS action) {
         this.thrusting = false;
         switch (action) {
-            case "ACTION_THRUST":
+            case ACTION_THRUST:
                 this.thrusting = true;
                 ForcePhysics.thrust(velocity, dir);
                 break;
-            case "ACTION_LEFT":
+            case ACTION_LEFT:
                 RotationPhysics.steer(dir, -1.0);
                 break;
-            case "ACTION_RIGHT":
+            case ACTION_RIGHT:
                 RotationPhysics.steer(dir, 1.0);
                 break;
-            case "ACTION_FIRE":
+            case ACTION_FIRE:
                 ForcePhysics.repulse(pos, dir, false);
                 break;
-            case "ACTION_NIL":
+            case ACTION_NIL:
                 break;
             default:
                 break;
@@ -137,8 +144,8 @@ public class Ship extends GameObject {
         return dir;
     }
 
-    public double getScore() {
-        double score = this.nbKills * KILL_AWARD - this.cost;
+    public int getScore() {
+        int score = (int) (this.nbKills * KILL_AWARD - this.cost);
         return score;
     }
 
@@ -183,20 +190,49 @@ public class Ship extends GameObject {
     @Override
     public void draw(Canvas canvas) {
 //        canvas.drawCircle((float) this.pos.x, (float) this.pos.y, (float) this.radius, paint);
-        final RectF rect = new RectF();
-        //Example values
-        float left = (float) this.pos.x - SHIP_RADIUS*2/3;
-        float top = (float) this.pos.y + SHIP_RADIUS;
-        float right = (float) this.pos.x + SHIP_RADIUS*2/3;
-        float bottom = (float) this.pos.y - SHIP_RADIUS;
-        rect.set(left, top, right, bottom);
-        paint.setStrokeWidth(20);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        float degree = 75;// (float) Math.atan2(dir.x, dir.y);
-        canvas.drawArc(rect, degree, 360, false, paint);
-        canvas.drawCircle((float) (this.pos.x+SHIP_RADIUS*2/3*Math.sin(degree)), (float) (this.pos.y+SHIP_RADIUS*Math.cos(degree)), SHIP_RADIUS/4, paint);
-        System.out.println("ship drawn");
+//        final RectF rect = new RectF();
+//        //Example values
+//        float left = (float) this.pos.x - SHIP_RADIUS*2/3;
+//        float top = (float) this.pos.y + SHIP_RADIUS;
+//        float right = (float) this.pos.x + SHIP_RADIUS*2/3;
+//        float bottom = (float) this.pos.y - SHIP_RADIUS;
+//        rect.set(left, top, right, bottom);
+//        paint.setStrokeWidth(20);
+//        paint.setStrokeCap(Paint.Cap.ROUND);
+//        paint.setStyle(Paint.Style.STROKE);
+
+        drawShip(canvas);
+//        float degree = 75;// (float) Math.atan2(dir.x, dir.y);
+//        canvas.drawArc(rect, degree, 360, false, paint);
+//        canvas.drawCircle((float) (this.pos.x+SHIP_RADIUS*2/3*Math.sin(degree)), (float) (this.pos.y+SHIP_RADIUS*Math.cos(degree)), SHIP_RADIUS/4, paint);
+//        System.out.println("ship drawn");
+    }
+
+    private void drawShip(Canvas canvas) {
+        Vector2d[] newPoints = new Vector2d[shipPoints.length];
+        for (int i=0; i<shipPoints.length; i++) {
+//            newPoints[i] = shipPoints[i].mul(dir.sin()).add(pos);
+            newPoints[i] = shipPoints[i].rotate(dir).add(pos);
+        }
+        drawPoly(canvas, newPoints);
+    }
+
+    private void drawPoly(Canvas canvas, Vector2d[] points) {
+        if (points.length < 2) {
+            return;
+        }
+        // path
+        Path polyPath = new Path();
+        polyPath.moveTo((float) points[0].x, (float) points[0].y);
+        int i, len;
+        len = points.length;
+        for (i = 0; i < len; i++) {
+            polyPath.lineTo((float) points[i].x, (float) points[i].y);
+        }
+        polyPath.lineTo((float) points[0].x, (float) points[0].y);
+
+        // draw
+        canvas.drawPath(polyPath, paint);
     }
 
     public double getCost() {
@@ -215,5 +251,9 @@ public class Ship extends GameObject {
     public void update(Rect rect) {
         pos.add(velocity);
         pos.wrap(rect.width(), rect.height());
+    }
+
+    public Vector2d getVelocity() {
+        return this.velocity;
     }
 }

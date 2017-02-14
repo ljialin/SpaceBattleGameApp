@@ -6,9 +6,7 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.example.admin.spacebattlegame.MainActivity;
 import com.example.admin.spacebattlegame.game.Ship;
-import com.example.admin.spacebattlegame.GameThread;
 
 import java.util.List;
 
@@ -74,7 +72,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void onDraw(Canvas canvas) {
-        List<Ship> ships = mainActivity.getModel().getShips();
+        Ship[] ships = mainActivity.getModel().getAvatars();
         for (Ship ship : ships) {
             ship.draw(canvas);
         }

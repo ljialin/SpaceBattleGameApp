@@ -7,11 +7,12 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
 
+import com.example.admin.spacebattlegame.game.GameObject;
 import com.example.admin.spacebattlegame.game.Ship;
 import com.example.admin.spacebattlegame.game.SpaceBattleGameModel;
 
 public class GameThread extends Thread {
-    static final String TAG = "";
+    static final String TAG = "GameThread: ";
     GameView GameView;
     // set this to false for a graceful death
     boolean running;
@@ -21,15 +22,15 @@ public class GameThread extends Thread {
     public GameThread(GameView GameView) {
         this.GameView = GameView;
         running = true;
-        System.out.println("TestActivity: Making Game Data");
+        System.out.println("GameThread: Making Game Data");
         model = new SpaceBattleGameModel(GameView.getWidth(), GameView.getHeight());
-        System.out.println("TestActivity: Test Thread About to Start");
+        System.out.println("TestActivity: GameThread About to Start");
         start();
 
     }
 
     public void run() {
-        System.out.println("TestActivity: TestThread Running");
+        System.out.println("TestActivity: GameThread Running");
         int count = 0;
         while (running) {
             Canvas c = null;
@@ -52,14 +53,14 @@ public class GameThread extends Thread {
             try {
                 sleep(delay);
                 if (count % 50 == 0) {
-                    System.out.println("TestActivity: " + count);
+                    System.out.println("GameThread: " + count);
                 }
             } catch (Exception e) {
-                System.out.println("TestActivity: TestThread Exception: " + e);
+                System.out.println("GameThread: TestThread Exception: " + e);
             }
         }
         running = false;  // set this in case we got here via gameOver()
-        System.out.println("GameView: exiting TestThread.run()");
+        System.out.println("GameView: exiting GameThread.run()");
     }
 
     public void draw(SurfaceHolder surfaceHolder, Canvas c) {
@@ -67,7 +68,9 @@ public class GameThread extends Thread {
         Rect rect = surfaceHolder.getSurfaceFrame();
         c.drawRect(rect, bg);
         // and the movable objects
-        for (Ship ship : model.getShips()) ship.draw(c);
+        for (Ship ship : model.getAvatars()) ship.draw(c);
+        for (GameObject missile : model.getObjects()) missile.draw(c);
+
         // and the game data ...
         drawText(rect, c);
     }
@@ -76,11 +79,11 @@ public class GameThread extends Thread {
         tp.setTextSize(rect.height() / 20);
         float inset = -tp.ascent() * 2;
         tp.setTextAlign(Paint.Align.LEFT);
-        tp.setTextSize(10);
+        tp.setTextSize(50);
 
         c.drawText("Score = " + model.score, inset, inset, tp);
         tp.setTextAlign(Paint.Align.RIGHT);
-        tp.setTextSize(10);
+        tp.setTextSize(50);
         String timeRemaining = String.format("%.2fs", model.timeRemaining / 1000.0f);
         c.drawText(timeRemaining, rect.width() - inset, inset, tp);
         tp.setTextAlign(Paint.Align.CENTER);
@@ -89,7 +92,7 @@ public class GameThread extends Thread {
 
     public void update(Rect rect) {
         // update the game objects etc
-        for (Ship ship : model.getShips()) ship.update(rect);
+        for (Ship ship : model.getAvatars()) ship.update(rect);
         GameView.mainActivity.updateScore(model.score);
     }
 
@@ -97,7 +100,7 @@ public class GameThread extends Thread {
         running = false;
         try {
             join();
-            System.out.println("TestActivity: dieAndWait() " + this.getState());
+            System.out.println("GameThread: dieAndWait() " + this.getState());
         } catch (Exception e) {
 
         }

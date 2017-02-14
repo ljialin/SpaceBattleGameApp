@@ -223,6 +223,13 @@ public class Vector2d {
         y = ny;
     }
 
+
+    public Vector2d rotate(Vector2d dir) {
+        Vector2d newV = this.copy();
+        newV.rotate(dir.theta());
+        return newV;
+    }
+
     /**
      * Calculates the scalar product of this vector and the one passed by parameter
      * @param v vector to do the scalar product with.
@@ -288,6 +295,10 @@ public class Vector2d {
      */
     public double theta() {
         return Math.atan2(y, x);
+    }
+
+    public double sin() {
+        return y/Math.sqrt(x*x+y*y);
     }
 
     /**

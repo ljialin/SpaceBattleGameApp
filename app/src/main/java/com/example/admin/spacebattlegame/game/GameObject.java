@@ -17,6 +17,7 @@ public abstract class GameObject {
     protected double radius;
     protected boolean dead;
     protected int playerId;
+    protected boolean isWrappable;
     public int color;
     Paint paint;
 
@@ -75,5 +76,9 @@ public abstract class GameObject {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    public boolean isWrappable() {
+        return isWrappable;
     }
 }

@@ -24,8 +24,8 @@ public class Constants {
 
     public static final int WEAPON_ID_MISSILE = 1;
     public static final int MISSILE_MAX_RESOURCE = 1000000;
-    public static  double MISSILE_RADIUS = 4; // to optimise, id=5
-    public static  int MISSILE_MAX_TTL = 30; // to optimise, id=6
+    public static  double MISSILE_RADIUS = 10; // to optimise, id=5
+    public static  int MISSILE_MAX_TTL = 50; // to optimise, id=6
     public static final int MISSILE_DESTRUCTIVE_POWER = 1;
 
     public static final double GRAVITY = 0;
@@ -33,9 +33,7 @@ public class Constants {
 
     public static  double RADIAN_UNIT = 10 * Math.PI / 180; // to optimise, id=10
 
-    public static final int WIDTH = 640;
-    public static final int HEIGHT = 480;
-    public static final double VIEW_SCALE = 1.0;
+
 
     public static final int MAX_HEALTH_POINTS = 1000;
     public static final int LIVE_AWARD = 10;
