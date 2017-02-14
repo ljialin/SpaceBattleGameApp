@@ -29,6 +29,8 @@ public class SpaceBattleGameModel {
     public boolean isEnded = false;
 
     static Paint paintBlue, paintGreen;
+
+
     static {
         paintBlue = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintBlue.setColor(Color.BLUE);
@@ -58,13 +60,23 @@ public class SpaceBattleGameModel {
 
     public ArrayList<GameObject> getObjects() { return this.objects;}
 
+    /**
+     * Update the game state
+     * @param surfaceFrame
+     * @param delay
+     */
     public void update(Rect surfaceFrame, int delay) {
         update();
     }
 
+
+    /**
+     * Update the game state using the actions by human player and AI agent
+     * todo how to handle the human player's action?
+     */
     public void update() {
         Types.ACTIONS[] actions = new Types.ACTIONS[NB_SHIP];
-        actions[0] = null; // TODO: 14/02/2017 human player's behaviour here
+        actions[0] = null; // TODO: 14/02/2017 input human player's behaviour here or in other place
         actions[1] = opponent.act(this.copy());
 
 
@@ -76,6 +88,11 @@ public class SpaceBattleGameModel {
         }
     }
 
+    /**
+     * Receive the actions from human player and AI agent,
+     * then update the game objects' position, directions, etc
+     * @param actions
+     */
     public void advance(Types.ACTIONS[] actions) {
         for (int i=0; i<actions.length; i++) {
             if(actions[i] == null) {
@@ -95,7 +112,7 @@ public class SpaceBattleGameModel {
             wrap(ob);
         }
 
-//        checkCollision();
+        checkCollision();
 
         removeDead();
 
@@ -103,20 +120,11 @@ public class SpaceBattleGameModel {
             this.avatars[i].getScore();
         }
 
-//        gameTick++;
-
-//    System.out.println("StateObservationMulti : gameTick=" + gameTick);
-//        if (visible) {
-//            view.repaint();
-//            sleep();
-//        }
     }
 
     protected void fireMissile(int playerId) {
-        // need all the usual missile firing code here
         Ship currentShip = this.avatars[playerId];
         boolean fired = this.avatars[playerId].fire();
-//    System.out.println("Ship " + playerId + " fires ? " + fired);
         if(fired) {
             Missile m;
             if (playerId ==0 ) {
@@ -132,19 +140,27 @@ public class SpaceBattleGameModel {
         }
     }
 
-    public SpaceBattleGameModel copy() {
-        SpaceBattleGameModel state = new SpaceBattleGameModel(width, height);
-        state.avatars = copyShips();
-        state.objects = copyObjects();
-        return state;
+    protected void checkCollision() {
+        // TODO: 14/02/2017 check the collision between missiles and ships
     }
 
+
+    /**
+     * Remove the missiles after its TTL
+     */
     protected void removeDead() {
         for(int i=objects.size()-1; i>=0; i--) {
             GameObject ob = objects.get(i);
             if(ob.isDead())
                 objects.remove(i);
         }
+    }
+
+    public SpaceBattleGameModel copy() {
+        SpaceBattleGameModel state = new SpaceBattleGameModel(width, height);
+        state.avatars = copyShips();
+        state.objects = copyObjects();
+        return state;
     }
 
     protected ArrayList<GameObject> copyObjects() {

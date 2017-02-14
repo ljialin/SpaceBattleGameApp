@@ -1,7 +1,6 @@
 package com.example.admin.spacebattlegame.game;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 
 import com.example.admin.spacebattlegame.tools.Vector2d;
@@ -13,7 +12,6 @@ import com.example.admin.spacebattlegame.tools.Vector2d;
  */
 
 public class Missile extends Weapon {
-    private Color color;
 
     public Missile(Paint paint, int playerId, Vector2d pos, Vector2d velocity, int missileTTL) {
         super(paint, playerId, pos, velocity);

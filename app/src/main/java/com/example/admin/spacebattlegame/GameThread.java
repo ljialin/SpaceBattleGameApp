@@ -16,7 +16,7 @@ public class GameThread extends Thread {
     GameView GameView;
     // set this to false for a graceful death
     boolean running;
-    int delay = 50; // delay in ms
+    int delay = 10; // delay in ms
     SpaceBattleGameModel model;
 
     public GameThread(GameView GameView) {

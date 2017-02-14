@@ -46,13 +46,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         postInvalidate();
     }
 
-    public void resume() {
-    }
-
-    public void pause() {
-
-    }
-
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
 
         System.out.println(TAG +  "surfaceCreated: "+getWidth()+"," + getHeight());

@@ -19,14 +19,11 @@ public class Constants {
 
 
 
-    public static final double SHIP_SCALE = 1;
     public static final double MAX_REPULSE_FORCE = 1.0;
 
-    public static final int WEAPON_ID_MISSILE = 1;
     public static final int MISSILE_MAX_RESOURCE = 1000000;
     public static  double MISSILE_RADIUS = 10; // to optimise, id=5
     public static  int MISSILE_MAX_TTL = 50; // to optimise, id=6
-    public static final int MISSILE_DESTRUCTIVE_POWER = 1;
 
     public static final double GRAVITY = 0;
     public static  double FRICTION = 0.99; // to optimise, id=9

@@ -1,12 +1,9 @@
 package com.example.admin.spacebattlegame.game;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.opengl.GLES20;
 
 import com.example.admin.spacebattlegame.game.physics.ForcePhysics;
 import com.example.admin.spacebattlegame.game.physics.GravityPhysics;
@@ -35,6 +32,7 @@ public class Ship extends GameObject {
     private int nbKills;
     private double cost;
     private int winState;
+    private int cooldown;
 
     Paint paint;
 
@@ -74,7 +72,8 @@ public class Ship extends GameObject {
         this.thrusting = false;
         this.cost = 0.0;
         this.nbKills = 0;
-        isWrappable = true;
+        this.isWrappable = true;
+        this.cooldown = MISSILE_COOLDOWN;
     }
 
     public void reset(int x, int y) {
@@ -152,9 +151,10 @@ public class Ship extends GameObject {
 
     public boolean fire() {
 
-        if (this.nbMissiles >0) {
+        if (this.nbMissiles >0 && cooldown <= 0) {
             boolean canFire = true;
             this.cost += 1;
+            cooldown = MISSILE_COOLDOWN;
             return canFire;
         }
         return false;
@@ -189,29 +189,16 @@ public class Ship extends GameObject {
 
     @Override
     public void draw(Canvas canvas) {
-//        canvas.drawCircle((float) this.pos.x, (float) this.pos.y, (float) this.radius, paint);
-//        final RectF rect = new RectF();
-//        //Example values
-//        float left = (float) this.pos.x - SHIP_RADIUS*2/3;
-//        float top = (float) this.pos.y + SHIP_RADIUS;
-//        float right = (float) this.pos.x + SHIP_RADIUS*2/3;
-//        float bottom = (float) this.pos.y - SHIP_RADIUS;
-//        rect.set(left, top, right, bottom);
-//        paint.setStrokeWidth(20);
-//        paint.setStrokeCap(Paint.Cap.ROUND);
-//        paint.setStyle(Paint.Style.STROKE);
-
         drawShip(canvas);
-//        float degree = 75;// (float) Math.atan2(dir.x, dir.y);
-//        canvas.drawArc(rect, degree, 360, false, paint);
-//        canvas.drawCircle((float) (this.pos.x+SHIP_RADIUS*2/3*Math.sin(degree)), (float) (this.pos.y+SHIP_RADIUS*Math.cos(degree)), SHIP_RADIUS/4, paint);
-//        System.out.println("ship drawn");
     }
 
+    /**
+     * Draw ship using current position and direction
+     */
+    // TODO: 14/02/2017  Can you use a bitmap instead of drawing the polygon ?
     private void drawShip(Canvas canvas) {
         Vector2d[] newPoints = new Vector2d[shipPoints.length];
         for (int i=0; i<shipPoints.length; i++) {
-//            newPoints[i] = shipPoints[i].mul(dir.sin()).add(pos);
             newPoints[i] = shipPoints[i].rotate(dir).add(pos);
         }
         drawPoly(canvas, newPoints);
@@ -251,6 +238,7 @@ public class Ship extends GameObject {
     public void update(Rect rect) {
         pos.add(velocity);
         pos.wrap(rect.width(), rect.height());
+        cooldown--;
     }
 
     public Vector2d getVelocity() {
